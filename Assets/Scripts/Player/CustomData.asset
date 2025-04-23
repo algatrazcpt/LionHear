@@ -12,42 +12,42 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 62993872a38761248b23683b577f4015, type: 3}
   m_Name: CustomData
   m_EditorClassIdentifier: 
-  gravityStrength: 0
-  gravityScale: 0
-  fallGravityMult: 0
-  maxFallSpeed: 0
-  fastFallGravityMult: 0
-  maxFastFallSpeed: 0
-  runMaxSpeed: 0
-  runAcceleration: 0
-  runAccelAmount: 0
-  runDecceleration: 0
-  runDeccelAmount: 0
-  accelInAir: 0
-  deccelInAir: 0
-  doConserveMomentum: 1
-  jumpHeight: 0
-  jumpTimeToApex: 0
-  jumpForce: 0
-  jumpCutGravityMult: 0
-  jumpHangGravityMult: 0
+  gravityStrength: -52
+  gravityScale: 1.7333333
+  fallGravityMult: 2
+  maxFallSpeed: 18
+  fastFallGravityMult: 1
+  maxFastFallSpeed: 20
+  runMaxSpeed: 9.5
+  runAcceleration: 9.5
+  runAccelAmount: 50
+  runDecceleration: 9.5
+  runDeccelAmount: 50
+  accelInAir: 1
+  deccelInAir: 1
+  doConserveMomentum: 0
+  jumpHeight: 6.5
+  jumpTimeToApex: 0.5
+  jumpForce: 26
+  jumpCutGravityMult: 3.5
+  jumpHangGravityMult: 1
   jumpHangTimeThreshold: 0
-  jumpHangAccelerationMult: 0
-  jumpHangMaxSpeedMult: 0
-  wallJumpForce: {x: 0, y: 0}
-  wallJumpRunLerp: 0
-  wallJumpTime: 0
+  jumpHangAccelerationMult: 1
+  jumpHangMaxSpeedMult: 1
+  wallJumpForce: {x: 8.5, y: 20}
+  wallJumpRunLerp: 0.075
+  wallJumpTime: 0.3
   doTurnOnWallJump: 0
-  slideSpeed: 0
-  slideAccel: 0
-  coyoteTime: 0
-  jumpInputBufferTime: 0
-  dashAmount: 0
-  dashSpeed: 0
+  slideSpeed: -12
+  slideAccel: 12
+  coyoteTime: 0.2
+  jumpInputBufferTime: 0.2
+  dashAmount: 1
+  dashSpeed: 1
   dashSleepTime: 0
-  dashAttackTime: 0
-  dashEndTime: 0
+  dashAttackTime: 1
+  dashEndTime: 1
   dashEndSpeed: {x: 0, y: 0}
   dashEndRunLerp: 0
-  dashRefillTime: 0
-  dashInputBufferTime: 0
+  dashRefillTime: 5
+  dashInputBufferTime: 0.01
