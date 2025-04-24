@@ -4,8 +4,8 @@ using UnityEngine;
 public class PlayerData : ScriptableObject
 {
     [Header("Gravity")]
-    [HideInInspector] public float gravityStrength; //Downwards force (gravity) needed for the desired jumpHeight and jumpTimeToApex.
-    [HideInInspector] public float gravityScale; //Strength of the player's gravity as a multiplier of gravity (set in ProjectSettings/Physics2D).
+     public float gravityStrength; //Downwards force (gravity) needed for the desired jumpHeight and jumpTimeToApex.
+     public float gravityScale; //Strength of the player's gravity as a multiplier of gravity (set in ProjectSettings/Physics2D).
                                                  //Also the value the player's rigidbody2D.gravityScale is set to.
     [Space(5)]
     public float fallGravityMult; //Multiplier to the player's gravityScale when falling.
@@ -20,9 +20,9 @@ public class PlayerData : ScriptableObject
     [Header("Run")]
     public float runMaxSpeed; //Target speed we want the player to reach.
     public float runAcceleration; //The speed at which our player accelerates to max speed, can be set to runMaxSpeed for instant acceleration down to 0 for none at all
-    [HideInInspector] public float runAccelAmount; //The actual force (multiplied with speedDiff) applied to the player.
+     public float runAccelAmount; //The actual force (multiplied with speedDiff) applied to the player.
     public float runDecceleration; //The speed at which our player decelerates from their current speed, can be set to runMaxSpeed for instant deceleration down to 0 for none at all
-    [HideInInspector] public float runDeccelAmount; //Actual force (multiplied with speedDiff) applied to the player .
+     public float runDeccelAmount; //Actual force (multiplied with speedDiff) applied to the player .
     [Space(5)]
     [Range(0f, 1)] public float accelInAir; //Multipliers applied to acceleration rate when airborne.
     [Range(0f, 1)] public float deccelInAir;
@@ -34,7 +34,7 @@ public class PlayerData : ScriptableObject
     [Header("Jump")]
     public float jumpHeight; //Height of the player's jump
     public float jumpTimeToApex; //Time between applying the jump force and reaching the desired jump height. These values also control the player's gravity and jump force.
-    [HideInInspector] public float jumpForce; //The actual force applied (upwards) to the player when they jump.
+     public float jumpForce; //The actual force applied (upwards) to the player when they jump.
 
     [Header("Both Jumps")]
     public float jumpCutGravityMult; //Multiplier to increase gravity if the player releases thje jump button while still jumping
