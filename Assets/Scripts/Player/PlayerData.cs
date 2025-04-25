@@ -77,6 +77,10 @@ public class PlayerData : ScriptableObject
     public float dashRefillTime;
     [Space(5)]
     [Range(0.01f, 0.5f)] public float dashInputBufferTime;
+    //Custom
+    public float dashForce = 20f;
+    public float dashDuration = 0.2f;
+    public float dashCooldown = 1f;
 
 
     //Unity Callback, called when the inspector updates

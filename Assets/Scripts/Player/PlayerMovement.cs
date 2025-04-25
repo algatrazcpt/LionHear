@@ -1,4 +1,4 @@
-/*
+ï»¿/*
 	Created by @DawnosaurDev at youtube.com/c/DawnosaurStudios
 	Thanks so much for checking this out and I hope you find it helpful! 
 	If you have any further queries, questions or feedback feel free to reach out on my twitter or leave a comment on youtube :D
@@ -6,6 +6,7 @@
 	Feel free to use this in your own games, and I'd love to see anything you make!
  */
 
+using System;
 using System.Collections;
 using UnityEngine;
 
@@ -18,7 +19,8 @@ public enum PlayerState
     Jumping,
     Rising,
     Falling,
-    Landing
+    Landing,
+	Dash
 }
 
 
@@ -32,15 +34,20 @@ public class PlayerMovement : MonoBehaviour
     public PlayerState currentState;
     #region COMPONENTS
     public Rigidbody2D RB { get; private set; }
-	//Script to handle all player animations, all references can be safely removed if you're importing into your own project.
-	//public PlayerAnimator AnimHandler { get; private set; }
-	#endregion
+    //Script to handle all player animations, all references can be safely removed if you're importing into your own project.
+    //public PlayerAnimator AnimHandler { get; private set; }
+    #endregion
 
-	#region STATE PARAMETERS
-	//Variables control the various actions the player can perform at any time.
-	//These are fields which can are public allowing for other sctipts to read them
-	//but can only be privately written to.
-	public bool IsFacingRight { get; private set; }
+    #region STATE PARAMETERS
+    //Variables control the various actions the player can perform at any time.
+    //These are fields which can are public allowing for other sctipts to read them
+    public bool canDash = true;
+   // private bool isDashing = false;
+    private float dashTimer = 0f;
+    private float dashCooldownTimer = 0f;
+
+    //but can only be privately written to.
+    public bool IsFacingRight { get; private set; }
 	public bool IsJumping { get; private set; }
 	public bool IsWallJumping { get; private set; }
 	public bool IsDashing { get; private set; }
@@ -121,7 +128,7 @@ public class PlayerMovement : MonoBehaviour
 		JumpHandler();
         #endregion
         #region DASH CHECKS
-		DashHandler();
+		//DashHandler();
 		#endregion
 		#region SLIDE CHECKS
 		SlideHandler();
@@ -145,7 +152,7 @@ public class PlayerMovement : MonoBehaviour
             currentState != PlayerState.Landing)
         {
             ChangeState(PlayerState.Falling);
-            return; // diðer durumlara geçmesin artýk
+            return; // diÄŸer durumlara geÃ§mesin artÄ±k
         }
 
         switch (currentState)
@@ -183,6 +190,12 @@ public class PlayerMovement : MonoBehaviour
                 if (isGrounded && Mathf.Abs(RB.linearVelocity.y) < 0.01f)
                     ChangeState(Mathf.Abs(_moveInput.x) > 0.01f ? PlayerState.Run : PlayerState.Idle);
                 break;
+            case PlayerState.Dash:
+                if (!IsDashing)
+                {
+                    Dash();
+                }
+                break;
         }
     }
 
@@ -214,10 +227,13 @@ public class PlayerMovement : MonoBehaviour
                 animator.SetBool("isFalling", false);
                 animator.SetBool("isRising", false);
                 break;
+            case PlayerState.Dash:
+                animator.SetTrigger("DashT"); // varsa dash animasyonu
+                break;
         }
     }
 
-	void GroundCheck()
+    void GroundCheck()
 	{
 		//Ground Check
 		isGrounded = Physics2D.OverlapBox(_groundCheckPoint.position, _groundCheckSize, 0, _groundLayer);
@@ -251,6 +267,7 @@ public class PlayerMovement : MonoBehaviour
         else
             IsSliding = false;
     }
+    /*
 	void DashHandler()
 	{
         if (CanDash() && LastPressedDashTime > 0)
@@ -274,6 +291,7 @@ public class PlayerMovement : MonoBehaviour
             //StartCoroutine(nameof(StartDash), _lastDashDir);
         }
     }
+    */
 	void JumpHandler()
 	{
         if (IsJumping && RB.linearVelocity.y < 0)
@@ -365,10 +383,8 @@ public class PlayerMovement : MonoBehaviour
             OnJumpUpInput();
         }
 
-        if (Input.GetKeyDown(KeyCode.X) || Input.GetKeyDown(KeyCode.LeftShift) || Input.GetKeyDown(KeyCode.K))
-        {
-            OnDashInput();
-        }
+        if (Input.GetKeyDown(KeyCode.LeftShift) && canDash)
+            ChangeState(PlayerState.Dash);
     }
     void GravityHandler()
 	{
@@ -580,10 +596,67 @@ public class PlayerMovement : MonoBehaviour
 		RB.AddForce(force, ForceMode2D.Impulse);
 		#endregion
 	}
-	#endregion
+    #endregion
 
-	#region DASH METHODS
-	//Dash Coroutine
+    #region DASH METHODS
+
+    private void Dash()
+    {
+        //if (!canDash || currentState == PlayerState.Stun) return;
+        if (!canDash) return;
+
+        IsDashing = true;
+        canDash = false;
+       // playerIsMoveAble = false;
+       /*
+        if (isKnockback)
+        {
+            rb.velocity = Vector2.zero;
+            StopCoroutine("KnockbackEffect");
+            isKnockback = false;
+        }*/
+
+        Vector2 dashDir = _moveInput.x != 0 ? new Vector2(_moveInput.x, 0).normalized : _moveInput.normalized;
+        Vector2 startPos = RB.position;
+        Vector2 targetPos = startPos + (dashDir * Data.dashForce * Data.dashDuration);
+
+        RaycastHit2D hit = Physics2D.Raycast(startPos, dashDir, Data.dashForce * Data.dashDuration, LayerMask.GetMask("NoAccessZone"));
+        if (hit.collider != null)
+            targetPos = hit.point;
+
+        RB.linearVelocity = dashDir * Data.dashForce;
+        ChangeState(PlayerState.Dash);
+
+        StartCoroutine(StopDash(targetPos));
+    }
+
+    private IEnumerator StopDash(Vector2 stopPos)
+    {
+        float time = 0f;
+
+        while (time < Data.dashDuration)
+        {
+            if (Vector2.Distance(RB.position, stopPos) < 0.1f)
+                break;
+
+            time += Time.deltaTime;
+            yield return null;
+        }
+
+        RB.linearVelocity = Vector2.zero;
+        RB.position = stopPos;
+        IsDashing = false;
+       // playerIsMoveAble = true;
+
+        ChangeState(PlayerState.Idle); // veya Run
+
+        yield return new WaitForSeconds(Data.dashCooldown);
+        canDash = true;
+    }
+
+
+    //Dash Coroutine
+    /*
 	private IEnumerator StartDash(Vector2 dir)
 	{
 		//Overall this method of dashing aims to mimic Celeste, if you're looking for
@@ -634,10 +707,11 @@ public class PlayerMovement : MonoBehaviour
 		_dashRefilling = false;
 		_dashesLeft = Mathf.Min(Data.dashAmount, _dashesLeft + 1);
 	}
-	#endregion
+    */
+    #endregion
 
-	#region OTHER MOVEMENT METHODS
-	private void Slide()
+    #region OTHER MOVEMENT METHODS
+    private void Slide()
 	{
 		//We remove the remaining upwards Impulse to prevent upwards sliding
 		if(RB.linearVelocity.y > 0)
@@ -684,16 +758,6 @@ public class PlayerMovement : MonoBehaviour
 	private bool CanWallJumpCut()
 	{
 		return IsWallJumping && RB.linearVelocity.y > 0;
-	}
-
-	private bool CanDash()
-	{
-		if (!IsDashing && _dashesLeft < Data.dashAmount && LastOnGroundTime > 0 && !_dashRefilling)
-		{
-			StartCoroutine(nameof(RefillDash), 1);
-		}
-
-		return _dashesLeft > 0;
 	}
 
 	public bool CanSlide()

@@ -385,6 +385,7 @@ GameObject:
   - component: {fileID: 628845651}
   - component: {fileID: 628845650}
   - component: {fileID: 628845655}
+  - component: {fileID: 628845656}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -399,16 +400,26 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 628845649}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 410e8470deb4f274880575c0db18d2db, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  animator: {fileID: 628845655}
   playerData: {fileID: 11400000, guid: 3587c5cc0fab06b4890b477139cc2b4f, type: 2}
-  currentState: 0
   groundCheckPoint: {fileID: 2038488535}
   groundCheckSize: {x: 0.49, y: 0.51}
-  groundLayer: 0
+  groundLayer:
+    serializedVersion: 2
+    m_Bits: 64
+  moveInput: 0
+  isGrounded: 0
+  isJumping: 0
+  isJumpCut: 0
+  isDashing: 0
+  isFastFalling: 0
+  dashTimeCounter: 0
+  currentState: 0
 --- !u!70 &628845651
 CapsuleCollider2D:
   m_ObjectHideFlags: 0
@@ -566,6 +577,28 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &628845656
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 628845649}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e5813c4252cdfd04bb85788b9c1cf18e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Data: {fileID: 11400000, guid: 3587c5cc0fab06b4890b477139cc2b4f, type: 2}
+  currentState: 0
+  _groundCheckPoint: {fileID: 2038488535}
+  _groundCheckSize: {x: 0.49, y: 0.03}
+  _frontWallCheckPoint: {fileID: 140025310}
+  _backWallCheckPoint: {fileID: 671154781}
+  _wallCheckSize: {x: 0.5, y: 1}
+  _groundLayer:
+    serializedVersion: 2
+    m_Bits: 64
 --- !u!1 &671154780
 GameObject:
   m_ObjectHideFlags: 0
