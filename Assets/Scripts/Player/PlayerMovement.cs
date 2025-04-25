@@ -9,13 +9,28 @@
 using System.Collections;
 using UnityEngine;
 
+
+
+public enum PlayerState
+{
+    Idle,
+    Run,
+    Jumping,
+    Rising,
+    Falling,
+    Landing
+}
+
+
 public class PlayerMovement : MonoBehaviour
 {
 	//Scriptable object which holds all the player's movement parameters. If you don't want to use it
 	//just paste in all the parameters, though you will need to manuly change all references in this script
 	public PlayerData Data;
+    private Animator animator;
 
-	#region COMPONENTS
+    public PlayerState currentState;
+    #region COMPONENTS
     public Rigidbody2D RB { get; private set; }
 	//Script to handle all player animations, all references can be safely removed if you're importing into your own project.
 	//public PlayerAnimator AnimHandler { get; private set; }
@@ -55,8 +70,8 @@ public class PlayerMovement : MonoBehaviour
 
 	#region INPUT PARAMETERS
 	private Vector2 _moveInput;
-
-	public float LastPressedJumpTime { get; private set; }
+    private bool isGrounded;
+    public float LastPressedJumpTime { get; private set; }
 	public float LastPressedDashTime { get; private set; }
 	#endregion
 
@@ -80,8 +95,10 @@ public class PlayerMovement : MonoBehaviour
     private void Awake()
 	{
 		RB = GetComponent<Rigidbody2D>();
-		//AnimHandler = GetComponent<PlayerAnimator>();
-	}
+        animator = GetComponent<Animator>();
+        currentState = PlayerState.Idle;
+        //AnimHandler = GetComponent<PlayerAnimator>();
+    }
 
 	private void Start()
 	{
@@ -111,8 +128,110 @@ public class PlayerMovement : MonoBehaviour
         #endregion
         #region GRAVITY
         GravityHandler();
-		#endregion
+
+        UpdateStateMachine();
+        #endregion
     }
+
+	private void UpdateStateMachine()
+    {
+        GroundCheck();
+
+        //Turn(moveInput);
+        if (!isGrounded && RB.linearVelocity.y < -0.02f &&
+            currentState != PlayerState.Falling &&
+            currentState != PlayerState.Jumping &&
+            currentState != PlayerState.Rising &&
+            currentState != PlayerState.Landing)
+        {
+            ChangeState(PlayerState.Falling);
+            return; // diðer durumlara geçmesin artýk
+        }
+
+        switch (currentState)
+        {
+            case PlayerState.Idle:
+                if (Mathf.Abs(_moveInput.x) > 0.01f)
+                    ChangeState(PlayerState.Run);
+                //if (Input.GetButtonDown("Jump") && isGrounded)
+                  //  ChangeState(PlayerState.Jumping);
+                break;
+
+            case PlayerState.Run:
+               // if (Input.GetButtonDown("Jump") && isGrounded)
+                 //   ChangeState(PlayerState.Jumping);
+                 if (Mathf.Abs(_moveInput.x) <= 0.01f)
+                    ChangeState(PlayerState.Idle);
+                break;
+
+            case PlayerState.Jumping:
+                if (RB.linearVelocity.y > 0.01f)
+                    ChangeState(PlayerState.Rising);
+                break;
+
+            case PlayerState.Rising:
+                if (RB.linearVelocity.y <= 0)
+                    ChangeState(PlayerState.Falling);
+                break;
+
+            case PlayerState.Falling:
+                if (isGrounded)
+                    ChangeState(PlayerState.Landing);
+                break;
+
+            case PlayerState.Landing:
+                if (isGrounded && Mathf.Abs(RB.linearVelocity.y) < 0.01f)
+                    ChangeState(Mathf.Abs(_moveInput.x) > 0.01f ? PlayerState.Run : PlayerState.Idle);
+                break;
+        }
+    }
+
+    private void ChangeState(PlayerState newState)
+    {
+        currentState = newState;
+
+        switch (newState)
+        {
+            case PlayerState.Idle:
+                animator.SetInteger("moving", -1);
+                break;
+            case PlayerState.Run:
+                animator.SetInteger("moving", 1);
+                break;
+            case PlayerState.Jumping:
+                animator.SetTrigger("JumpingT");
+                break;
+            case PlayerState.Rising:
+                animator.SetBool("isRising", true);
+                animator.SetBool("isFalling", false);
+                break;
+            case PlayerState.Falling:
+                animator.SetBool("isFalling", true);
+                animator.SetBool("isRising", false);
+                break;
+            case PlayerState.Landing:
+                animator.SetTrigger("LandingT");
+                animator.SetBool("isFalling", false);
+                animator.SetBool("isRising", false);
+                break;
+        }
+    }
+
+	void GroundCheck()
+	{
+		//Ground Check
+		isGrounded = Physics2D.OverlapBox(_groundCheckPoint.position, _groundCheckSize, 0, _groundLayer);
+        if (isGrounded) //checks if set box overlaps with ground
+        {
+            if (LastOnGroundTime < -0.1f)
+            {
+                //AnimHandler.justLanded = true;
+            }
+
+            LastOnGroundTime = Data.coyoteTime; //if so sets the lastGrounded to coyoteTime
+        }
+    }
+
 	void TimeHandler()
 	{
         #region TIMERS
@@ -138,7 +257,7 @@ public class PlayerMovement : MonoBehaviour
         {
             //Freeze game for split second. Adds juiciness and a bit of forgiveness over directional input
             Sleep(Data.dashSleepTime);
-
+			
             //If not direction pressed, dash forward
             if (_moveInput != Vector2.zero)
                 _lastDashDir = _moveInput;
@@ -181,6 +300,8 @@ public class PlayerMovement : MonoBehaviour
             //Jump
             if (CanJump() && LastPressedJumpTime > 0)
             {
+				//jump change  state
+                ChangeState(PlayerState.Jumping);
                 IsJumping = true;
                 IsWallJumping = false;
                 _isJumpCut = false;
@@ -208,16 +329,8 @@ public class PlayerMovement : MonoBehaviour
 	{
         if (!IsDashing && !IsJumping)
         {
-            //Ground Check
-            if (Physics2D.OverlapBox(_groundCheckPoint.position, _groundCheckSize, 0, _groundLayer)) //checks if set box overlaps with ground
-            {
-                if (LastOnGroundTime < -0.1f)
-                {
-                    //AnimHandler.justLanded = true;
-                }
 
-                LastOnGroundTime = Data.coyoteTime; //if so sets the lastGrounded to coyoteTime
-            }
+
 
             //Right Wall Check
             if (((Physics2D.OverlapBox(_frontWallCheckPoint.position, _wallCheckSize, 0, _groundLayer) && IsFacingRight)
@@ -243,6 +356,7 @@ public class PlayerMovement : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.C) || Input.GetKeyDown(KeyCode.J))
         {
+			Debug.Log("JumpKey");
             OnJumpInput();
         }
 
@@ -411,12 +525,6 @@ public class PlayerMovement : MonoBehaviour
 
 		//Convert this to a vector and apply to rigidbody
 		RB.AddForce(movement * Vector2.right, ForceMode2D.Force);
-
-		/*
-		 * For those interested here is what AddForce() will do
-		 * RB.velocity = new Vector2(RB.velocity.x + (Time.fixedDeltaTime  * speedDif * accelRate) / RB.mass, RB.velocity.y);
-		 * Time.fixedDeltaTime is by default in Unity 0.02 seconds equal to 50 FixedUpdate() calls per second
-		*/
 	}
 
 	private void Turn()

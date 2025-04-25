@@ -48,7 +48,7 @@ public class PlayerMoveController : MonoBehaviour
     private void Update()
     {
         GroundCheck();
-        HandleInput();
+
         Turn(moveInput);
         if (!isGrounded && rb.linearVelocity.y < -0.02f &&
             currentState != PlayerState.Falling &&
@@ -97,35 +97,34 @@ public class PlayerMoveController : MonoBehaviour
                 break;
         }
     }
-
     private void FixedUpdate()
+    {
+        if (isDashing)
         {
-            if (isDashing)
-            {
-                Dash();
-            }
-            else
-            {
-                Run(1);
-                ApplyGravity();
-            }
+            Dash();
         }
-
-        private void HandleInput()
+        else
         {
-            moveInput = Input.GetAxisRaw("Horizontal");
-
-            if (!isDashing)
-            {
-                if (Input.GetButtonUp("Jump"))
-                    isJumpCut = true;
-
-                if (Input.GetKeyDown(KeyCode.LeftShift))
-                    StartDash();
-            }
+            Run(1);
+            ApplyGravity();
         }
+    }
 
-        private void ChangeState(PlayerState newState)
+    private void HandleInput()
+    {
+        moveInput = Input.GetAxisRaw("Horizontal");
+
+        if (!isDashing)
+        {
+            if (Input.GetButtonUp("Jump"))
+                isJumpCut = true;
+
+            if (Input.GetKeyDown(KeyCode.LeftShift))
+                StartDash();
+        }
+    }
+
+    private void ChangeState(PlayerState newState)
         {
         switch (newState)
         {
