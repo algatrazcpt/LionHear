@@ -405,39 +405,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerData: {fileID: 11400000, guid: 3587c5cc0fab06b4890b477139cc2b4f, type: 2}
-  runMaxSpeed: 9.5
-  runAcceleration: 9.5
-  runDecceleration: 9.5
-  accelInAir: 1
-  deccelInAir: 1
-  doConserveMomentum: 0
-  jumpHeight: 6.5
-  jumpTimeToApex: 0.5
-  fallGravityMult: 2
-  fastFallGravityMult: 1
-  maxFallSpeed: 18
-  maxFastFallSpeed: 24
-  jumpCutGravityMult: 3.5
-  jumpHangGravityMult: 1
-  jumpHangTimeThreshold: 1
-  dashSpeed: 0
-  dashDuration: 0
-  groundCheckPoint: {fileID: 2038488535}
-  groundCheckSize: {x: 0.79, y: 0.45}
-  groundLayer:
-    serializedVersion: 2
-    m_Bits: 64
-  moveInput: 0
-  isGrounded: 0
-  isJumping: 0
-  isJumpCut: 0
-  isDashing: 0
-  isFastFalling: 0
-  gravityStrength: 0
-  gravityScale: 0
-  jumpForce: 0
-  dashTimeCounter: 0
   currentState: 0
+  groundCheckPoint: {fileID: 2038488535}
+  groundCheckSize: {x: 0.49, y: 0.51}
+  groundLayer: 0
 --- !u!70 &628845651
 CapsuleCollider2D:
   m_ObjectHideFlags: 0
