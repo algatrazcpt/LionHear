@@ -76,7 +76,13 @@ public class PlayerMovement : MonoBehaviour
 	#endregion
 
 	#region INPUT PARAMETERS
+    public bool fastRunMode=false;
+    public float fastRunTimer = 0f;
+    public float fastRunClampTime = 1.5f;
+
+
 	private Vector2 _moveInput;
+    private Vector2 _lastMoveInput;
     private bool isGrounded;
     public float LastPressedJumpTime { get; private set; }
 	public float LastPressedDashTime { get; private set; }
@@ -120,9 +126,12 @@ public class PlayerMovement : MonoBehaviour
 		#endregion
 		#region INPUT HANDLER
 		InputHandler();
-		#endregion
-		#region COLLISION CHECKS
-		CollisionHandler();
+        #endregion
+        #region FastRunMode
+        HandleFastRunTimer();
+        #endregion
+        #region COLLISION CHECKS
+        CollisionHandler();
 		#endregion
 		#region JUMP CHECKS
 		JumpHandler();
@@ -292,7 +301,27 @@ public class PlayerMovement : MonoBehaviour
         }
     }
     */
-	void JumpHandler()
+
+    private void HandleFastRunTimer()
+    {
+        // Eğer karakter koşuyorsa (moveInput != 0) ve yerdeyse
+        if (Mathf.Abs(_moveInput.x) > 0.01f && isGrounded&&RB.linearVelocityX!=0)
+        {
+            fastRunTimer += Time.deltaTime; // Zamanı artır
+            if (fastRunTimer >= fastRunClampTime)
+            {
+                fastRunMode = true; // 1.5 saniyeyi geçtiyse hızlı koşmaya gir
+            }
+        }
+        else
+        {
+            // Eğer koşmayı bıraktıysa veya havadaysa
+            fastRunTimer = 0f;
+            fastRunMode = false;
+        }
+    }
+
+    void JumpHandler()
 	{
         if (IsJumping && RB.linearVelocity.y < 0)
         {
@@ -370,7 +399,10 @@ public class PlayerMovement : MonoBehaviour
         _moveInput.y = Input.GetAxisRaw("Vertical");
 
         if (_moveInput.x != 0)
+        {
+            _lastMoveInput = _moveInput;
             CheckDirectionToFace(_moveInput.x > 0);
+        }
 
         if (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.C) || Input.GetKeyDown(KeyCode.J))
         {
@@ -616,7 +648,7 @@ public class PlayerMovement : MonoBehaviour
             isKnockback = false;
         }*/
 
-        Vector2 dashDir = _moveInput.x != 0 ? new Vector2(_moveInput.x, 0).normalized : _moveInput.normalized;
+        Vector2 dashDir = _moveInput.x != 0 ? new Vector2(_moveInput.x, 0).normalized : _lastMoveInput.normalized;
         Vector2 startPos = RB.position;
         Vector2 targetPos = startPos + (dashDir * Data.dashForce * Data.dashDuration);
 
