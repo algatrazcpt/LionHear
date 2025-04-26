@@ -79,9 +79,20 @@ public class PlayerMovement : MonoBehaviour
     public bool fastRunMode=false;
     public float fastRunTimer = 0f;
     public float fastRunClampTime = 1.5f;
+    public float fastRunSliding = 0.5f;
+    private float tempRunDeccel;
+    private float fastRunExitTimer = 0f; // Ekstra değişken: koşmayı bırakınca sayaç başlasın
+    private float fastRunExitDelay = 0.2f; // 0.2 saniye bekleyecek
+
+    //
+    public bool isChangingDirection = false;
+    private float slowDownDuration =0.2f;
+    private float slowDownFactor = 0.01f; // Ne kadar yavaşlasın (1 = normal hız, 0.3 = %30 hız)
+    public bool applySlowDown = false;
+    public float dynamicRun = 1f;
 
 
-	private Vector2 _moveInput;
+    private Vector2 _moveInput;
     private Vector2 _lastMoveInput;
     private bool isGrounded;
     public float LastPressedJumpTime { get; private set; }
@@ -103,13 +114,15 @@ public class PlayerMovement : MonoBehaviour
     #region LAYERS & TAGS
     [Header("Layers & Tags")]
 	[SerializeField] private LayerMask _groundLayer;
-	#endregion
+    private Vector2 lastMoveDirection;
+    #endregion
 
     private void Awake()
 	{
 		RB = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
         currentState = PlayerState.Idle;
+        tempRunDeccel = Data.runDecceleration;
         //AnimHandler = GetComponent<PlayerAnimator>();
     }
 
@@ -127,6 +140,7 @@ public class PlayerMovement : MonoBehaviour
 		#region INPUT HANDLER
 		InputHandler();
         #endregion
+        CheckDirectionChange();
         #region FastRunMode
         HandleFastRunTimer();
         #endregion
@@ -307,18 +321,73 @@ public class PlayerMovement : MonoBehaviour
         // Eğer karakter koşuyorsa (moveInput != 0) ve yerdeyse
         if (Mathf.Abs(_moveInput.x) > 0.01f && isGrounded&&RB.linearVelocityX!=0)
         {
-            fastRunTimer += Time.deltaTime; // Zamanı artır
             if (fastRunTimer >= fastRunClampTime)
             {
+                fastRunExitTimer = 0f;
+                Data.runDeccelAmount = fastRunSliding;
                 fastRunMode = true; // 1.5 saniyeyi geçtiyse hızlı koşmaya gir
+            }
+            else
+            {
+                fastRunTimer += Time.deltaTime; // Zamanı artır
             }
         }
         else
         {
-            // Eğer koşmayı bıraktıysa veya havadaysa
-            fastRunTimer = 0f;
-            fastRunMode = false;
+            if (fastRunMode) // Eğer hızlı koşma modundaysa
+            {
+                fastRunExitTimer += Time.deltaTime;
+                if (fastRunExitTimer >= fastRunExitDelay)
+                {
+                    fastRunMode = false;
+                    fastRunTimer = 0f;
+                    fastRunExitTimer = 0f;
+                }
+            }
+            else
+            {
+                Data.runDeccelAmount = tempRunDeccel;
+                fastRunTimer = 0f;
+                fastRunMode = false;
+            }
+
+
         }
+    }
+
+    private void CheckDirectionChange()
+    {
+        if (Mathf.Abs(_moveInput.x) > 0.01f) // Hareket ediyor muyuz
+        {
+            if (Mathf.Sign(_moveInput.x) != Mathf.Sign(lastMoveDirection.x) && lastMoveDirection.x != 0&&fastRunMode)
+            {
+                if (applySlowDown == false)
+                {
+                    StartCoroutine("SlowDownEffectCoroutine");
+                }
+            }
+
+            lastMoveDirection = _moveInput;
+        }
+    }
+
+    private IEnumerator SlowDownEffectCoroutine()
+    {
+        applySlowDown = true;
+
+        float elapsedTime = 0f;
+
+        while (elapsedTime < slowDownDuration)
+        {
+            float t = elapsedTime / slowDownDuration;
+            float lerpSpeed = Mathf.Lerp(slowDownFactor, 1f, t); // yavaş -> normal hız
+            dynamicRun = lerpSpeed;
+
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
+        dynamicRun = 1f;
+        applySlowDown = false;
     }
 
     void JumpHandler()
@@ -341,7 +410,6 @@ public class PlayerMovement : MonoBehaviour
 
             _isJumpFalling = false;
         }
-
         if (!IsDashing)
         {
             //Jump
@@ -473,7 +541,7 @@ public class PlayerMovement : MonoBehaviour
 			if (IsWallJumping)
 				Run(Data.wallJumpRunLerp);
 			else
-				Run(1);
+				Run(dynamicRun);
 		}
 		else if (_isDashAttacking)
 		{
