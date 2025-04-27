@@ -20,7 +20,8 @@ public enum PlayerState
     Rising,
     Falling,
     Landing,
-	Dash
+	Dash,
+    Attack
 }
 
 
@@ -32,6 +33,7 @@ public class PlayerMovement : MonoBehaviour
     private Animator animator;
 
     public PlayerState currentState;
+    private PlayerState lastState;
     #region COMPONENTS
     public Rigidbody2D RB { get; private set; }
     //Script to handle all player animations, all references can be safely removed if you're importing into your own project.
@@ -91,13 +93,13 @@ public class PlayerMovement : MonoBehaviour
     public bool applySlowDown = false;
     public float dynamicRun = 1f;
     //Attack
-    private bool isAttacking = false;
-    private int attackIndex = 0;
-    private float attackTimer = 0f;
-    private float attackDelay = 0.4f; // Her saldırıdan sonra bekleme süresi
-    private bool attackQueued = false;
-
-
+    public bool isAttacking = false;
+    public int attackIndex = 0;
+    public float attackTimer = 0f;
+    public float attackDelay = 0.4f; // Her saldırıdan sonra bekleme süresi
+    public bool attackQueued = false;
+    private int maxComboCount = 2;
+    public bool basicAttackAviable=false;
 
 
 
@@ -124,6 +126,7 @@ public class PlayerMovement : MonoBehaviour
     [Header("Layers & Tags")]
 	[SerializeField] private LayerMask _groundLayer;
     private Vector2 lastMoveDirection;
+    
     #endregion
 
     private void Awake()
@@ -149,6 +152,7 @@ public class PlayerMovement : MonoBehaviour
 		#region INPUT HANDLER
 		InputHandler();
         #endregion
+        AttackHandlerBasic();
         CheckDirectionChange();
         #region FastRunMode
         HandleFastRunTimer();
@@ -192,14 +196,16 @@ public class PlayerMovement : MonoBehaviour
             case PlayerState.Idle:
                 if (Mathf.Abs(_moveInput.x) > 0.01f)
                     ChangeState(PlayerState.Run);
-                //if (Input.GetButtonDown("Jump") && isGrounded)
-                  //  ChangeState(PlayerState.Jumping);
+
+                if (Input.GetButtonDown("Jump") && isGrounded)
+                    ChangeState(PlayerState.Jumping);
                 break;
 
             case PlayerState.Run:
-               // if (Input.GetButtonDown("Jump") && isGrounded)
-                 //   ChangeState(PlayerState.Jumping);
-                 if (Mathf.Abs(_moveInput.x) <= 0.01f)
+               if (Input.GetButtonDown("Fire1") && isGrounded)
+                    ChangeState(PlayerState.Attack);
+
+                if (Mathf.Abs(_moveInput.x) <= 0.01f)
                     ChangeState(PlayerState.Idle);
                 break;
 
@@ -217,6 +223,13 @@ public class PlayerMovement : MonoBehaviour
                 if (isGrounded)
                     ChangeState(PlayerState.Landing);
                 break;
+            case PlayerState.Attack:
+                if(!isAttacking)
+                {
+                    ChangeState(PlayerState.Idle);
+                }
+
+            break;
 
             case PlayerState.Landing:
                 if (isGrounded && Mathf.Abs(RB.linearVelocity.y) < 0.01f)
@@ -233,6 +246,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void ChangeState(PlayerState newState)
     {
+        lastState = currentState;
         currentState = newState;
 
         switch (newState)
@@ -279,6 +293,10 @@ public class PlayerMovement : MonoBehaviour
             LastOnGroundTime = Data.coyoteTime; //if so sets the lastGrounded to coyoteTime
         }
         animator.SetBool("isGround", isGrounded);
+    }
+    void BasicAttackCheck()
+    {
+        basicAttackAviable = isGrounded;
     }
 
 	void TimeHandler()
@@ -496,9 +514,14 @@ public class PlayerMovement : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.LeftShift) && canDash)
             ChangeState(PlayerState.Dash);
 
-        if ((Input.GetButtonDown("Fire1") || (Input.GetButton("Fire1") && attackTimer <= 0)) && !isAttacking)
+        if ((Input.GetButtonDown("Fire1") || (Input.GetButton("Fire1") && attackTimer <= 0)))
         {
-            StartAttack();
+            if (basicAttackAviable)
+            {
+                ChangeState(PlayerState.Attack);
+                StartAttack();
+                
+            }
         }
     }
     void GravityHandler()
@@ -551,7 +574,7 @@ public class PlayerMovement : MonoBehaviour
     private void FixedUpdate()
 	{
 		//Handle Run
-		if (!IsDashing)
+		if (!IsDashing&&currentState!=PlayerState.Attack&&!isAttacking)
 		{
 			if (IsWallJumping)
 				Run(Data.wallJumpRunLerp);
@@ -721,6 +744,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void Dash()
     {
+        
         //if (!canDash || currentState == PlayerState.Stun) return;
         if (!canDash) return;
 
@@ -777,44 +801,65 @@ public class PlayerMovement : MonoBehaviour
 
     private void StartAttack()
     {
+        RB.linearVelocity = Vector2.zero;
         isAttacking = true;
         attackTimer = attackDelay;
-        //erken ekleme ile combo sayısı 1 den başlar hep
         attackIndex++;
 
-        // Saldırı animasyonunu tetikleyelim (animator veya animation trigger sistemi)
-        animator.SetInteger("AttackComboCount",attackIndex); // mesela "Attack0", "Attack1", "Attack2" gibi animasyonlar
+        animator.SetInteger("AttackComboCount", attackIndex);
         animator.SetTrigger("AttackT");
-        // İleri doğru küçük bir itme kuvveti uygulayalım
-        RB.AddForce(new Vector2(transform.localScale.x * 5f, 0), ForceMode2D.Impulse);
 
-        
-        if (attackIndex >= 2) // Örnek: 3'lük bir combo sistemi
+        // İleri itme kuvveti combo adımına göre değişiyor
+        float attackPushForce = GetAttackPushForce(attackIndex);
+        Vector2 pushDirection = new Vector2(transform.localScale.x * attackPushForce, 0);
+        RB.AddForce(pushDirection, ForceMode2D.Impulse);
+
+        if (attackIndex >= maxComboCount)
             attackIndex = 0;
     }
-
-    void AttackHandler()
+    private float GetAttackPushForce(int comboStep)
     {
-        if (isAttacking)
+        switch (comboStep)
         {
-            attackTimer -= Time.deltaTime;
+            case 1:
+                return 5f; // 1. saldırı adımı
+            case 2:
+                return 6.5f; // 2. saldırı adımı daha güçlü
+            case 3:
+                return 8f; // 3. saldırı adımı en güçlü
+            default:
+                return 5f; // Hata olursa varsayılan
+        }
+    }
+    public void AttackTarget()
+    {
+        Debug.Log("AttackTargeted");
+    }
 
-            if (attackTimer <= 0)
+    void AttackHandlerBasic()
+    {
+        if (basicAttackAviable)
+        {
+            if (isAttacking)
             {
-                isAttacking = false;
+                attackTimer -= Time.deltaTime;
 
-                // Eğer basılı tutmaya devam ediyorsa bir sonrakini sıraya al
-                if (Input.GetButton("Fire1"))
+                if (attackTimer <= 0)
                 {
-                    attackQueued = true;
+                    isAttacking = false;
+
+                    // Eğer basılı tutmaya devam ediyorsa bir sonrakini sıraya al
+                    if (Input.GetButton("Fire1"))
+                    {
+                        attackQueued = true;
+                    }
                 }
             }
-        }
-
-        if (attackQueued && !isAttacking)
-        {
-            attackQueued = false;
-            StartAttack();
+            if (attackQueued && !isAttacking)
+            {
+                attackQueued = false;
+                StartAttack();
+            }
         }
     }
 
