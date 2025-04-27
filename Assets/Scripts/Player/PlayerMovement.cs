@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections;
+using Unity.VisualScripting;
 using UnityEngine;
 
 
@@ -179,7 +180,7 @@ public class PlayerMovement : MonoBehaviour
 	private void UpdateStateMachine()
     {
         GroundCheck();
-
+        BasicAttackCheck();
         //Turn(moveInput);
         if (!isGrounded && RB.linearVelocity.y < -0.02f &&
             currentState != PlayerState.Falling &&
@@ -224,9 +225,20 @@ public class PlayerMovement : MonoBehaviour
                     ChangeState(PlayerState.Landing);
                 break;
             case PlayerState.Attack:
-                if(!isAttacking)
+                if(!isAttacking&&basicAttackAviable)
                 {
-                    ChangeState(PlayerState.Idle);
+                    if (_moveInput.x != 0)
+                    {
+                        ChangeState(PlayerState.Run);
+                    }
+                    else
+                    {
+                        ChangeState(PlayerState.Idle);
+                    }
+                }
+                else
+                {
+                    ChangeState(lastState);
                 }
 
             break;
@@ -276,6 +288,9 @@ public class PlayerMovement : MonoBehaviour
             case PlayerState.Dash:
                 animator.SetTrigger("DashT"); // varsa dash animasyonu
                 break;
+
+
+
         }
     }
 
