@@ -38,7 +38,7 @@ AnimatorStateTransition:
     m_ConditionEvent: AttackComboCount
     m_EventTreshold: 2
   - m_ConditionMode: 1
-    m_ConditionEvent: isGroundAttack
+    m_ConditionEvent: isGround
     m_EventTreshold: 0
   - m_ConditionMode: 1
     m_ConditionEvent: AttackT
@@ -69,7 +69,7 @@ AnimatorStateTransition:
     m_ConditionEvent: AttackComboCount
     m_EventTreshold: 1
   - m_ConditionMode: 1
-    m_ConditionEvent: isGroundAttack
+    m_ConditionEvent: isGround
     m_EventTreshold: 0
   - m_ConditionMode: 1
     m_ConditionEvent: AttackT
@@ -327,8 +327,8 @@ AnimatorController:
     m_DefaultInt: 0
     m_DefaultBool: 0
     m_Controller: {fileID: 9100000}
-  - m_Name: isGroundAttack
-    m_Type: 9
+  - m_Name: isGround
+    m_Type: 4
     m_DefaultFloat: 0
     m_DefaultInt: 0
     m_DefaultBool: 0

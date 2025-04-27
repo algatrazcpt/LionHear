@@ -90,6 +90,15 @@ public class PlayerMovement : MonoBehaviour
     private float slowDownFactor = 0.01f; // Ne kadar yavaşlasın (1 = normal hız, 0.3 = %30 hız)
     public bool applySlowDown = false;
     public float dynamicRun = 1f;
+    //Attack
+    private bool isAttacking = false;
+    private int attackIndex = 0;
+    private float attackTimer = 0f;
+    private float attackDelay = 0.4f; // Her saldırıdan sonra bekleme süresi
+    private bool attackQueued = false;
+
+
+
 
 
     private Vector2 _moveInput;
@@ -269,6 +278,7 @@ public class PlayerMovement : MonoBehaviour
 
             LastOnGroundTime = Data.coyoteTime; //if so sets the lastGrounded to coyoteTime
         }
+        animator.SetBool("isGround", isGrounded);
     }
 
 	void TimeHandler()
@@ -485,6 +495,11 @@ public class PlayerMovement : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.LeftShift) && canDash)
             ChangeState(PlayerState.Dash);
+
+        if ((Input.GetButtonDown("Fire1") || (Input.GetButton("Fire1") && attackTimer <= 0)) && !isAttacking)
+        {
+            StartAttack();
+        }
     }
     void GravityHandler()
 	{
@@ -552,6 +567,10 @@ public class PlayerMovement : MonoBehaviour
 		if (IsSliding)
 			Slide();
     }
+
+
+
+
 
     #region INPUT CALLBACKS
 	//Methods which whandle input detected in Update()
@@ -753,6 +772,55 @@ public class PlayerMovement : MonoBehaviour
         yield return new WaitForSeconds(Data.dashCooldown);
         canDash = true;
     }
+
+
+
+    private void StartAttack()
+    {
+        isAttacking = true;
+        attackTimer = attackDelay;
+        //erken ekleme ile combo sayısı 1 den başlar hep
+        attackIndex++;
+
+        // Saldırı animasyonunu tetikleyelim (animator veya animation trigger sistemi)
+        animator.SetInteger("AttackComboCount",attackIndex); // mesela "Attack0", "Attack1", "Attack2" gibi animasyonlar
+        animator.SetTrigger("AttackT");
+        // İleri doğru küçük bir itme kuvveti uygulayalım
+        RB.AddForce(new Vector2(transform.localScale.x * 5f, 0), ForceMode2D.Impulse);
+
+        
+        if (attackIndex >= 2) // Örnek: 3'lük bir combo sistemi
+            attackIndex = 0;
+    }
+
+    void AttackHandler()
+    {
+        if (isAttacking)
+        {
+            attackTimer -= Time.deltaTime;
+
+            if (attackTimer <= 0)
+            {
+                isAttacking = false;
+
+                // Eğer basılı tutmaya devam ediyorsa bir sonrakini sıraya al
+                if (Input.GetButton("Fire1"))
+                {
+                    attackQueued = true;
+                }
+            }
+        }
+
+        if (attackQueued && !isAttacking)
+        {
+            attackQueued = false;
+            StartAttack();
+        }
+    }
+
+
+
+
 
 
     //Dash Coroutine
