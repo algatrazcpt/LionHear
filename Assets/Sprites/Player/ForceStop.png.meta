@@ -1,10 +1,22 @@
 fileFormatVersion: 2
-guid: 52a62b2aece3be8479f26d22b8f267f6
+guid: 59eab67a89de9a744b08e05e59e466bf
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 508591715825662441
-    second: Falling_0
+      213: -8482199913614912348
+    second: ForceStop_0
+  - first:
+      213: -8355891621685052100
+    second: ForceStop_1
+  - first:
+      213: -657889934064763349
+    second: ForceStop_2
+  - first:
+      213: -5059981329600250350
+    second: ForceStop_3
+  - first:
+      213: -2999752973729871946
+    second: ForceStop_4
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -46,7 +58,7 @@ TextureImporter:
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
-  spriteMode: 1
+  spriteMode: 2
   spriteExtrude: 1
   spriteMeshType: 1
   alignment: 0
@@ -100,13 +112,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Falling_0
+      name: ForceStop_0
       rect:
         serializedVersion: 2
-        x: 16
-        y: 8
-        width: 42
-        height: 55
+        x: 0
+        y: 0
+        width: 207
+        height: 101
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -115,8 +127,96 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 9e9be7d8871ee0700800000000000000
-      internalID: 508591715825662441
+      spriteID: 4a452238e1c294a80800000000000000
+      internalID: -8482199913614912348
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ForceStop_1
+      rect:
+        serializedVersion: 2
+        x: 207
+        y: 0
+        width: 207
+        height: 101
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c3dbccb67d8e90c80800000000000000
+      internalID: -8355891621685052100
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ForceStop_2
+      rect:
+        serializedVersion: 2
+        x: 414
+        y: 0
+        width: 207
+        height: 101
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b2eb3c23794bed6f0800000000000000
+      internalID: -657889934064763349
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ForceStop_3
+      rect:
+        serializedVersion: 2
+        x: 621
+        y: 0
+        width: 207
+        height: 101
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 21e71172ac557c9b0800000000000000
+      internalID: -5059981329600250350
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ForceStop_4
+      rect:
+        serializedVersion: 2
+        x: 828
+        y: 0
+        width: 207
+        height: 101
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6b7c8e2509cbe56d0800000000000000
+      internalID: -2999752973729871946
       vertices: []
       indices: 
       edges: []
@@ -125,7 +225,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 5e97eb03825dee720800000000000000
+    spriteID: 07fa100a126b66246a8aecbc781363d8
     internalID: 0
     vertices: []
     indices: 
@@ -135,7 +235,11 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Falling_0: 508591715825662441
+      ForceStop_0: -8482199913614912348
+      ForceStop_1: -8355891621685052100
+      ForceStop_2: -657889934064763349
+      ForceStop_3: -5059981329600250350
+      ForceStop_4: -2999752973729871946
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
